@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+node_modules/
+.env
+.env.local
+.DS_Store
+dist/
+CONTEXT.md
+DEMO.md
+PANGRAM_NOTES.md
+letter_telugu_unused.txt
