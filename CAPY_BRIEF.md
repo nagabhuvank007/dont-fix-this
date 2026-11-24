@@ -63,3 +63,34 @@ REQUIREMENTS
 Responsive desktop and mobile. Smooth transitions. A reset button. A complete working
 end-to-end demo. Prioritize finishing the full interaction over adding features.
 No accounts, subscriptions, dashboards or extras.
+
+CLOSING SCREEN — DO NOT GENERATE THIS TEXT
+The closing message is composed from three fixed lookup tables, not from an LLM call and
+not from a template. The exact strings are supplied separately (ENDINGS.md). Structure:
+
+  type Outcome   = "verbatim" | "semantic" | "gone"
+  type Predicted = "survive" | "lost"
+  type Choice    = "original" | "original_after_switch" | "light"
+                 | "polished" | "polished_after_switch"
+  type Verdict   = "human" | "ai" | "ai_but_chose_original" | "mixed" | "error"
+
+  closing = [ PREDICTION[predicted][outcome], CHOICE[choice], DETECTOR[verdict] ]
+
+Then always, on its own line:
+  "AI can make your words better. Only you can decide what better means."
+
+Resolve "ai_but_chose_original" before the lookup: it is verdict "ai" together with a
+choice of the untouched original. That combination means the detector is wrong about a
+human letter, and it gets its own honest message rather than the generic AI one.
+
+Deciding Outcome:
+  verbatim — the protected sentence appears exactly, normalizing whitespace/punctuation
+  gone     — no sentence in the chosen text shares meaningful content with it
+  semantic — same claim, different words. The common case. Never collapse it into "gone".
+
+In the semantic case, render ghosts for ONLY the words that disappeared, not the whole
+sentence. On the reference letter, the medium edit loses one word that matters — "you" —
+and ghosting the whole line would hide it. The smallness of the loss is the point.
+
+Copy the three polished reference versions in as seeded demo data so the app can be
+demonstrated with no API access at all.
