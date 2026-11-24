@@ -40,6 +40,31 @@ It's the only line that's both specific and counterintuitive — missing a *bad*
 Polish handles that badly. It cuts it for being negative, or smooths it into something
 agreeable with the love drained out.
 
+## The result
+
+Pangram 4.1, real API responses, 24 Nov 2026:
+
+| version  | protected sentence | Pangram | human |
+|----------|--------------------|---------|-------|
+| original | verbatim | Human Written | 1.0000 |
+| light    | verbatim | Human Written | 1.0000 |
+| medium   | passive — "you" gone | AI Generated | 0.0000 |
+| heavy    | gone | AI Generated | 0.0000 |
+
+The detector's boundary falls exactly where the meaning was lost. Light polish keeps the
+sentence word for word and reads as fully human. Medium polish turns it passive — "you
+scolding me" becomes "being scolded", and my mother disappears from the sentence — and
+Pangram flips to AI with near-total confidence.
+
+Nothing coordinated those two things. One is a grammar choice. The other is a classifier.
+They landed on the same step.
+
+**It caught the edit. It could not tell me what the edit took.** It said *a machine wrote
+this.* It did not say *the word "you" is missing from sentence seven, and that word was
+your mother.* Those are different questions, and only one of them is answerable by a score.
+
+One letter, four versions. n=1. A demonstration, not a study.
+
 ## What Pangram does, and what it doesn't
 
 Pangram reports **authorship**. It does not measure writing quality, meaning or sincerity.

@@ -22,7 +22,7 @@ for p, t in texts.items():
     print(f"{p}  ({len(t.split())} words)")
     print("=" * 60)
     try:
-        r = client.predict(t, public_dashboard_link=False)
+        r = client.predict(t, public_dashboard_link=False, model="default")
     except Exception as e:
         print(f"FAILED: {type(e).__name__}: {e}")
         continue
