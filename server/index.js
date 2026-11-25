@@ -80,22 +80,35 @@ const rewriteOne = (text, instruction) =>
 
 // Seeded versions of the reference letter, so the piece can be demonstrated with
 // no LLM access at all. These are the real generated outputs, kept verbatim.
-const seeded = JSON.parse(fs.readFileSync("server/seed.json", "utf8"));
+const library = JSON.parse(fs.readFileSync("server/letters.json", "utf8"));
 const norm = (s) => s.replace(/\s+/g, " ").trim().toLowerCase();
+const findSeeded = (text) => library.letters.find((l) => norm(l.original) === norm(text));
+
+// The prepared letters, for a demo that cannot fail. Originals only — the
+// versions are withheld until the viewer has committed to a sentence.
+app.get("/api/letters", (_req, res) =>
+  res.json({
+    letters: library.letters.map(({ id, author, to, blurb, original, suggested }) => ({
+      id, author, to, blurb, original, suggested,
+    })),
+  })
+);
 
 app.post("/api/rewrite", async (req, res) => {
   const { text } = req.body || {};
   if (typeof text !== "string" || text.split(/\s+/).length < 50)
     return res.status(400).json({ error: "Needs at least 50 words." });
 
-  if (norm(text) === norm(seeded.original))
-    return res.json({ versions: seeded.versions, source: "seed" });
+  const seeded = findSeeded(text);
+  if (seeded) return res.json({ versions: seeded.versions, source: "prepared" });
 
   if (!ANTHROPIC_KEY && !OPENAI_KEY)
     return res.status(503).json({
       error:
-        "No LLM key configured, so this letter cannot be rewritten. Add ANTHROPIC_API_KEY " +
-        "or OPENAI_API_KEY to .env, or use the demonstration letter.",
+        "This copy has no editing model configured, so a letter written here cannot be " +
+        "rewritten. Choose one of the prepared letters instead — those are real letters " +
+        "by real people, and their edits were made in advance.",
+      code: "no_llm",
     });
 
   try {
@@ -140,7 +153,11 @@ app.post("/api/detect", async (req, res) => {
 });
 
 app.get("/api/health", (_req, res) =>
-  res.json({ pangram: !!PANGRAM_KEY, llm: ANTHROPIC_KEY ? "anthropic" : OPENAI_KEY ? "openai" : null })
+  res.json({
+    pangram: !!PANGRAM_KEY,
+    llm: ANTHROPIC_KEY ? "anthropic" : OPENAI_KEY ? "openai" : null,
+    prepared: library.letters.length,
+  })
 );
 
 if (fs.existsSync("dist")) app.use(express.static("dist"));

@@ -1,15 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { sentences, outcomeFor, ghostTokens } from "./ghost.js";
 import { closing } from "./endings.js";
 
-const DEMO = `Amma,
 
-I'm coming home this winter break. I miss you a lot. Sometimes when I come back from work, I feel like eating your food, but then I have to cook something myself. I know I don't talk much when you call me. Most of the time I am busy with something or the other. Sorry Amma. This time when I come home, I just want to sit with you, eat good food and talk about everything that happened here. I even miss you scolding me for sleeping late. I never thought I would miss all these things.
-
-See you soon Amma.
-
-Love,
-Bhuvan`;
 
 const post = async (url, body) => {
   const r = await fetch(url, {
@@ -41,6 +34,9 @@ export default function App() {
   const [pick, setPick] = useState(null);
   const [detection, setDetection] = useState(null);
   const [busy, setBusy] = useState(false);
+  const [library, setLibrary] = useState([]);
+  const [canWriteOwn, setCanWriteOwn] = useState(true);
+  const [own, setOwn] = useState(false);
   const [err, setErr] = useState(null);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -50,9 +46,14 @@ export default function App() {
     [text]
   );
 
+  useEffect(() => {
+    fetch("/api/letters").then((r) => r.json()).then((d) => setLibrary(d.letters || [])).catch(() => {});
+    fetch("/api/health").then((r) => r.json()).then((d) => setCanWriteOwn(!!d.llm)).catch(() => {});
+  }, []);
+
   const reset = () => {
     setScreen("write"); setText(""); setProtected(null); setPredicted(null);
-    setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null);
+    setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null); setOwn(false);
   };
 
   async function generate() {
@@ -79,29 +80,65 @@ export default function App() {
   // ---------- 01 WRITE ----------
   if (screen === "write")
     return (
-      <Shell step="01 — write">
-        <h1>Write something that matters.</h1>
-        <p className="lede">
-          Not an essay. Not a prompt. Something you would actually say to someone.
-        </p>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="Dear…"
-          spellCheck={false}
-        />
-        <div className="row">
-          <button disabled={wordCount < 50} onClick={() => setScreen("protect")}>
-            Continue
-          </button>
-          <button className="ghost" onClick={() => setText(DEMO)}>
-            Use the demonstration letter
-          </button>
-          <span className="spacer" />
-          <span className="hint">
-            {wordCount} words{wordCount < 50 ? " — 50 needed" : ""}
-          </span>
-        </div>
+      <Shell step="01 — write" wide={!own}>
+        {own ? (
+          <>
+            <h1>Write something that matters.</h1>
+            <p className="lede">
+              Not an essay. Not a prompt. Something you would actually say to someone.
+            </p>
+            <textarea
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              placeholder="Dear…"
+              spellCheck={false}
+            />
+            <div className="row">
+              <button disabled={wordCount < 50} onClick={() => setScreen("protect")}>
+                Continue
+              </button>
+              <button className="ghost" onClick={() => { setOwn(false); setText(""); }}>
+                Back
+              </button>
+              <span className="spacer" />
+              <span className="hint">
+                {wordCount} words{wordCount < 50 ? " — 50 needed" : ""}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <h1>Start with a letter that matters.</h1>
+            <p className="lede">
+              Each of these was written by hand, by the person who signed it, before any of
+              this ran. That is the one rule here: the machine edits, it never writes.
+            </p>
+            <div className="cards">
+              {library.map((l) => (
+                <button key={l.id} className="card" onClick={() => { setText(l.original); setScreen("protect"); }}>
+                  <span className="mark">{l.author} — to {l.to}</span>
+                  <span className="body">{l.original}</span>
+                  {l.blurb && <span className="hint" style={{ marginTop: 0 }}>{l.blurb}</span>}
+                </button>
+              ))}
+            </div>
+            <div className="row">
+              <button
+                className="ghost"
+                disabled={!canWriteOwn}
+                onClick={() => setOwn(true)}
+                title={canWriteOwn ? "" : "No editing model configured on this copy"}
+              >
+                Write your own instead
+              </button>
+              {!canWriteOwn && (
+                <span className="hint">
+                  This copy has no editing model, so a new letter cannot be edited here.
+                </span>
+              )}
+            </div>
+          </>
+        )}
       </Shell>
     );
 
