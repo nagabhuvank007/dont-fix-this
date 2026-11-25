@@ -33,6 +33,9 @@ export default function App() {
   const [firstPick, setFirstPick] = useState(null);
   const [pick, setPick] = useState(null);
   const [detection, setDetection] = useState(null);
+  const [detectionErr, setDetectionErr] = useState(null);
+  const [sentenceDetection, setSentenceDetection] = useState(null);
+  const [sentenceErr, setSentenceErr] = useState(null);
   const [busy, setBusy] = useState(false);
   const [library, setLibrary] = useState([]);
   const [canWriteOwn, setCanWriteOwn] = useState(true);
@@ -54,6 +57,7 @@ export default function App() {
   const reset = () => {
     setScreen("write"); setText(""); setProtected(null); setPredicted(null);
     setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null); setOwn(false);
+    setDetectionErr(null); setSentenceDetection(null); setSentenceErr(null);
   };
 
   async function generate() {
@@ -66,11 +70,19 @@ export default function App() {
     finally { setBusy(false); }
   }
 
+  // Both readings go out together, only once the participant has chosen to send.
+  // Each settles on its own: a failure leaves its result null and records why.
   async function detect(chosen) {
-    setBusy(true);
-    try { setDetection(await post("/api/detect", { text: chosen.text })); }
-    catch (e) { setDetection(null); setErr(e.message); }
-    finally { setBusy(false); }
+    setBusy(true); setErr(null);
+    const [letter, sentence] = await Promise.allSettled([
+      post("/api/detect", { text: chosen.text }),
+      post("/api/detect-sentence", { sentence: protectedSentence }),
+    ]);
+    setDetection(letter.status === "fulfilled" ? letter.value : null);
+    setDetectionErr(letter.status === "rejected" ? letter.reason.message : null);
+    setSentenceDetection(sentence.status === "fulfilled" ? sentence.value : null);
+    setSentenceErr(sentence.status === "rejected" ? sentence.reason.message : null);
+    setBusy(false);
   }
 
   const chosen = pick;
@@ -283,16 +295,18 @@ export default function App() {
   const c = closing({ predicted, outcome: result.outcome, level: chosen.level, switched, detection });
   return (
     <Shell step="don't fix this" wide>
-      {detection && (
-        <div className="verdict">
-          <div className="h">Pangram — authorship</div>
-          <div className="v">{detection.headline}</div>
-          <div className="n">{detection.prediction}</div>
-          <div className="n">
-            An authorship assessment. Not a measure of writing quality, meaning or sincerity.
-          </div>
-        </div>
-      )}
+      <div className="verdicts">
+        <Verdict title="Pangram — the whole letter you sent" result={detection} error={detectionErr} />
+        <Verdict
+          title="Pangram — your protected sentence alone"
+          result={sentenceDetection}
+          error={sentenceErr}
+          quote={protectedSentence}
+        />
+      </div>
+      <p className="hint">
+        Authorship assessments. Not a measure of writing quality, meaning or sincerity.
+      </p>
       <div className="closing">
         {c.lines.map((l, i) => <p key={i}>{l}</p>)}
       </div>
@@ -301,6 +315,45 @@ export default function App() {
         <button className="ghost" onClick={reset}>Start again</button>
       </div>
     </Shell>
+  );
+}
+
+const shown = (v) => (v === null || v === undefined ? "not returned" : String(v));
+
+function Verdict({ title, result, error, quote }) {
+  const confidence = result?.windows?.map((w) => w.confidence).filter(Boolean) ?? [];
+  return (
+    <div className="verdict">
+      <div className="h">{title}</div>
+      {quote && <div className="q">“{quote}”</div>}
+      {error ? (
+        <>
+          <div className="v">No reading.</div>
+          <div className="n err">This call failed: {error}</div>
+        </>
+      ) : result ? (
+        <>
+          <div className="v">{shown(result.headline)}</div>
+          <div className="n">{shown(result.prediction)}</div>
+          <div className="n">
+            human {shown(result.fraction_human)} · ai {shown(result.fraction_ai)} · ai-assisted{" "}
+            {shown(result.fraction_ai_assisted)}
+          </div>
+          <div className="n">
+            confidence {confidence.length ? confidence.join(" / ") : "not returned"} · calibrated{" "}
+            {shown(result.calibrated_confidence)}
+          </div>
+          {result.word_count < 50 && (
+            <div className="n">
+              {result.word_count} words. Pangram asks for 50 or more, so this reading is less
+              reliable than the letter's.
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="n err">No result was received.</div>
+      )}
+    </div>
   );
 }
 
