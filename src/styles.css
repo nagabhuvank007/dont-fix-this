@@ -1,153 +1,241 @@
+/* DON'T FIX THIS. — dusk.
+   A cold blue night, a warm sheet of paper under a lamp, wood underneath.
+   Red appears in exactly one place: the words the polish took. Nothing else
+   in the piece is allowed to use it. */
 :root{
-  --paper:#f7f3ea;
-  --paper-deep:#f1ebdd;
-  --ink:#15120e;
-  --ink-soft:#4a443a;
-  --ink-faint:#8d8578;
-  --rule:#ddd4c2;
-  --wine:#6d1f2b;
-  --wine-soft:#9b4a53;
+  --night:#090e14;
+  --night-2:#0d141c;
+  --surface:#131b24;
+  --rule:#232e3a;
+  --rule-soft:#1a232d;
+
+  --text:#ece4d4;
+  --text-soft:#aea89c;
+  --text-faint:#6f7a86;
+
+  --wood:#6e4c32;
+  --wood-light:#a67b52;
+  --wood-deep:#3b291c;
+
+  --paper:#e9dfca;
+  --paper-edge:#d8cbb0;
+  --paper-ink:#221d17;
+  --paper-ink-soft:#5b5045;
+  --paper-ink-faint:#8a7d6d;
+
+  --loss:#cf4a3f;
+  --loss-glow:rgba(207,74,63,.42);
+
+  --notice:#c9a36b;
+  --lamp:rgba(255,200,130,.10);
+
   --serif:"EB Garamond",Georgia,serif;
-  --sans:"Inter",system-ui,sans-serif;
-  --measure:34rem;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --measure:36rem;
 }
 *{box-sizing:border-box}
-html,body{margin:0;background:var(--paper);color:var(--ink)}
+html{background:var(--night)}
+html,body{margin:0;color:var(--text)}
 body{
-  font-family:var(--serif);
-  font-size:19px;
-  line-height:1.62;
+  font-family:var(--serif);font-size:19px;line-height:1.62;
   -webkit-font-smoothing:antialiased;
+  background:
+    url("./textures/treeline.svg") repeat-x left bottom / auto min(20vh,170px) fixed,
+    radial-gradient(90% 38% at 50% 100%, #172636 0%, transparent 100%) fixed,
+    radial-gradient(120% 80% at 50% 0%, #0f1822 0%, var(--night) 62%) fixed;
+  min-height:100vh;
 }
-#root{min-height:100vh;display:flex;flex-direction:column}
+/* Film grain over everything, and a vignette that keeps the eye in the middle. */
+body::before,body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:0}
+body::before{background:url("./textures/grain.svg");opacity:.035;z-index:40}
+body::after{background:radial-gradient(ellipse at 50% 40%, transparent 50%, rgba(0,0,0,.5) 100%)}
+#root{min-height:100vh;display:flex;flex-direction:column;position:relative}
+#root > *{position:relative;z-index:1}
+
+::selection{background:var(--wood-light);color:var(--night)}
 
 .stage{
   flex:1;display:flex;flex-direction:column;justify-content:center;
-  width:100%;max-width:var(--measure);margin:0 auto;padding:4rem 16px 6rem;
+  width:100%;max-width:var(--measure);margin:0 auto;padding:5rem 20px 8rem;
 }
-.wide{max-width:50rem}
-/* Four letters must be scannable side by side, not stacked 2x2. */
-.widest{max-width:82rem}
+.wide{max-width:52rem}
+.widest{max-width:84rem}
 
+/* Machine voice: monospaced, small, spaced. The human voice is the serif. */
 .step{
-  font-family:var(--sans);font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;
-  color:var(--ink-faint);margin-bottom:2.25rem;
+  font-family:var(--mono);font-size:.6875rem;letter-spacing:.22em;text-transform:uppercase;
+  color:var(--text-faint);margin-bottom:2.5rem;display:flex;align-items:center;gap:.9rem;
 }
+.step::before{content:"";width:2.25rem;height:1px;background:var(--wood-light);opacity:.7}
 h1{
-  font-size:clamp(1.9rem,5vw,2.6rem);line-height:1.16;font-weight:500;
-  margin:0 0 1rem;letter-spacing:-.01em;
+  font-size:clamp(2rem,5vw,2.9rem);line-height:1.12;font-weight:400;
+  margin:0 0 1.1rem;letter-spacing:-.012em;color:var(--text);
 }
-.lede{color:var(--ink-soft);margin:0 0 2.5rem;font-size:1.0625rem}
-.hint{font-family:var(--sans);font-size:.8125rem;color:var(--ink-faint);margin-top:1rem}
+.lede{color:var(--text-soft);margin:0 0 2.75rem;font-size:1.0625rem;font-style:italic;max-width:34em}
+.hint{font-family:var(--mono);font-size:.72rem;letter-spacing:.02em;color:var(--text-faint);margin-top:1rem}
 
+/* ---------- paper ---------- */
+/* Every letter is a sheet of warm paper lying in the cold room. */
+.sheet,.card,textarea{
+  background:
+    url("./textures/grain.svg"),
+    var(--paper);
+  background-blend-mode:multiply;
+  color:var(--paper-ink);
+  border:0;border-radius:1px;
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.25) inset,
+    0 30px 60px -28px rgba(0,0,0,.85),
+    0 10px 24px -12px rgba(0,0,0,.6);
+}
+
+/* The writing desk: wood, and a pool of lamplight on the page. */
+.desk{position:relative;padding:2.25rem;margin:0 -2.25rem;border-radius:2px;
+  background:url("./textures/wood.svg"),linear-gradient(var(--wood-deep),var(--wood-deep));
+  background-size:600px 300px,auto;
+  box-shadow:0 40px 80px -30px rgba(0,0,0,.9), inset 0 0 0 1px rgba(255,255,255,.03);
+}
+.desk::before{content:"";position:absolute;inset:-6rem -4rem;pointer-events:none;
+  background:radial-gradient(closest-side, var(--lamp), transparent);z-index:0}
+.desk > *{position:relative;z-index:1}
 textarea{
-  width:100%;min-height:15rem;padding:1.5rem 1.6rem;
-  background:var(--paper-deep);border:1px solid var(--rule);border-radius:2px;
-  font-family:var(--serif);font-size:1.0625rem;line-height:1.7;color:var(--ink);
+  display:block;width:100%;min-height:22rem;padding:2.5rem 2.75rem;
+  font-family:var(--serif);font-size:1.15rem;line-height:1.85;
   resize:vertical;
 }
-textarea:focus{outline:none;border-color:var(--wine-soft)}
+textarea::placeholder{color:var(--paper-ink-faint);font-style:italic}
+textarea:focus{outline:none;box-shadow:
+  0 1px 0 rgba(255,255,255,.25) inset,0 0 0 1px var(--wood-light),
+  0 30px 60px -28px rgba(0,0,0,.85)}
 
+/* ---------- buttons ---------- */
+/* Primary is a small block of wood. Secondary is just an outline in the dark. */
 button{
-  font-family:var(--sans);font-size:.875rem;letter-spacing:.01em;
-  padding:.72rem 1.5rem;border-radius:2px;cursor:pointer;
-  border:1px solid var(--ink);background:var(--ink);color:var(--paper);
-  transition:background .18s,color .18s,border-color .18s,opacity .18s;
+  font-family:var(--mono);font-size:.75rem;letter-spacing:.14em;text-transform:uppercase;
+  padding:.95rem 1.6rem;border-radius:1px;cursor:pointer;
+  border:1px solid var(--wood-light);color:#f3ead9;
+  background:url("./textures/wood.svg"),var(--wood);background-size:600px 300px,auto;
+  transition:background-color .25s,color .25s,border-color .25s,opacity .25s,transform .25s;
 }
-button:hover:not(:disabled){background:var(--wine);border-color:var(--wine)}
-button:disabled{opacity:.3;cursor:not-allowed}
-button.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
-button.ghost:hover:not(:disabled){border-color:var(--ink);background:transparent;color:var(--ink)}
-.row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:2.25rem}
+button:not(.card):hover:not(:disabled){background-color:#83603f;transform:translateY(-1px)}
+button:focus-visible{outline:1px solid var(--text);outline-offset:3px}
+button:disabled{opacity:.28;cursor:not-allowed}
+button.ghost{background:transparent;color:var(--text-soft);border-color:var(--rule)}
+button.ghost:hover:not(:disabled){background:transparent;color:var(--text);border-color:var(--wood-light)}
+.row{display:flex;gap:.85rem;flex-wrap:wrap;align-items:center;margin-top:2.5rem}
 .spacer{flex:1}
 
-.letter{white-space:pre-wrap;font-size:1.0625rem;line-height:1.82;max-width:36em}
-
-/* sentence picking */
-.pick span{
-  cursor:pointer;border-radius:2px;padding:.06em 0;
-  transition:background .15s,color .15s;
-}
-.pick span:hover{background:#eadfc8}
-.pick span.on{background:var(--wine);color:var(--paper)}
-
-/* the four cards */
-/* Cap card width so a single letter doesn't stretch to an unreadable measure,
-   and centre the row when there are fewer cards than columns. */
-.cards{
-  display:grid;gap:1.25rem;justify-content:start;
-  grid-template-columns:repeat(auto-fit,minmax(18rem,30rem));
-}
-/* Four versions side by side need to be narrower than a lone letter. */
-.cards.four{grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))}
-.card{
-  background:var(--paper-deep);border:1px solid var(--rule);border-radius:2px;
-  padding:1.6rem 1.5rem;cursor:pointer;text-align:left;font-family:var(--serif);
-  color:var(--ink);display:flex;flex-direction:column;gap:1rem;
-  transition:border-color .18s,transform .18s;
-}
-.card:hover{border-color:var(--wine-soft);transform:translateY(-2px);background:var(--paper-deep)}
-.card.on{border-color:var(--wine);box-shadow:inset 0 0 0 1px var(--wine)}
-.card .mark{font-family:var(--sans);font-size:.6875rem;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
-.card .body{white-space:pre-wrap;font-size:.96rem;line-height:1.75;max-width:34em}
-
-/* The provenance note is a different kind of statement from the letter.
-   Separate it rather than letting it read as the last line. */
-.card .note{
-  border-top:1px solid var(--rule);padding-top:.9rem;margin-top:.15rem;
-  font-family:var(--sans);font-size:.75rem;line-height:1.5;color:var(--ink-faint);
-}
-
-/* ghosts */
-/* The reveal is the hero of the whole piece. It must outweigh its own heading. */
-.ghosted{position:relative;margin:2.5rem 0 2rem;font-size:clamp(1.5rem,3vw,2.125rem);line-height:1.65}
-.ghosted .kept{color:var(--ink)}
-.ghosted .lost{
-  color:transparent;position:relative;
-}
-.ghosted .lost::after{
-  content:attr(data-w);position:absolute;inset:0;
-  color:var(--wine);opacity:.72;
-  text-decoration:line-through;text-decoration-thickness:1.5px;
-}
-.sentence-box{
-  border-left:2px solid var(--rule);padding:.2rem 0 .2rem 1.5rem;margin:1.25rem 0 0;
-  font-size:1.3rem;line-height:1.65;color:var(--ink-soft);
-}
-.became{color:var(--ink-soft);font-size:1.0625rem;line-height:1.7;margin-top:2.25rem;max-width:38em}
-
-/* verdict + table */
-.verdict{border:1px solid var(--rule);border-radius:2px;padding:1.5rem;margin:2rem 0;background:var(--paper-deep)}
-.verdict .h{font-family:var(--sans);font-size:.6875rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint)}
-.verdict .v{font-size:1.5rem;margin-top:.35rem}
-.verdict .n{font-family:var(--sans);font-size:.8125rem;color:var(--ink-soft);margin-top:.6rem}
-.verdict .q{font-style:italic;color:var(--ink-soft);margin-top:.5rem;line-height:1.5}
-.verdict .n.err{color:var(--wine)}
-.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem;margin:2rem 0 0}
-.verdicts .verdict{margin:0}
-table{width:100%;border-collapse:collapse;margin:1.5rem 0;font-family:var(--sans);font-size:.8125rem}
-th,td{text-align:left;padding:.6rem .5rem;border-bottom:1px solid var(--rule)}
-th{color:var(--ink-faint);font-weight:500;letter-spacing:.06em;text-transform:uppercase;font-size:.6875rem}
-tr.flip td{color:var(--wine);font-weight:500}
-
-.closing p{font-size:1.1875rem;line-height:1.72;margin:0 0 1.1rem;color:var(--ink-soft)}
-.closing p:first-child{color:var(--ink)}
-.final{
-  font-size:clamp(1.35rem,3.6vw,1.75rem);line-height:1.38;margin:2.75rem 0 0;
-  padding-top:2rem;border-top:1px solid var(--rule);color:var(--ink);
-}
-.err{color:var(--wine);font-family:var(--sans);font-size:.875rem;margin-top:1rem}
-.foot{font-family:var(--sans);font-size:.75rem;color:var(--ink-faint);text-align:center;padding:1.5rem 16px 2.5rem}
-.fade{animation:fade .5s ease both}
-@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-@media (max-width:560px){ .stage{padding:2.5rem 16px 4rem} body{font-size:18px} }
-
+/* ---------- letters ---------- */
+.letter{white-space:pre-wrap;font-size:1.1rem;line-height:1.85}
+.letter.sheet{padding:2.75rem 3rem;max-width:none}
 .letter .para{margin:0 0 1.15rem}
 .letter .para:last-child{margin-bottom:0}
 
-/* Every version scored: the finding, shown rather than asserted. */
-.gradient{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--rule)}
+.pick span{cursor:pointer;padding:.08em .02em;border-radius:1px;
+  transition:background-color .2s,color .2s,box-shadow .2s}
+.pick span:hover{background:rgba(110,76,50,.14)}
+.pick span.on{background:var(--wood-deep);color:var(--paper);box-shadow:0 0 0 .18em var(--wood-deep)}
+
+/* Cards: identical sheets. Before a choice, no version is lit more than another. */
+.cards{display:grid;gap:1.5rem;grid-template-columns:repeat(auto-fit,minmax(18rem,32rem))}
+.cards.four{grid-template-columns:repeat(4,minmax(0,1fr));align-items:stretch}
+@media (max-width:1180px){.cards.four{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.cards.four{grid-template-columns:1fr}}
+.card{
+  padding:2rem 1.85rem 2.1rem;cursor:pointer;text-align:left;font-family:var(--serif);
+  display:flex;flex-direction:column;gap:1.1rem;text-transform:none;letter-spacing:0;font-size:1rem;
+  transition:transform .35s ease,box-shadow .35s ease,filter .35s ease;
+}
+.card:hover{transform:translateY(-3px);background-color:var(--paper)}
+.cards.four:has(.card.on) .card:not(.on){filter:brightness(.62) saturate(.8)}
+.card.on{transform:translateY(-6px);box-shadow:
+  0 0 0 1px var(--wood-light),
+  0 0 90px -10px rgba(255,200,130,.22),
+  0 40px 70px -30px rgba(0,0,0,.9)}
+.card .mark{font-family:var(--mono);font-size:.68rem;letter-spacing:.24em;color:var(--paper-ink-faint);text-transform:uppercase}
+.card .body{white-space:pre-wrap;font-size:.98rem;line-height:1.78;color:var(--paper-ink)}
+.card .note{border-top:1px solid var(--paper-edge);padding-top:.95rem;margin-top:.2rem;
+  font-family:var(--mono);font-size:.7rem;line-height:1.6;color:var(--paper-ink-soft)}
+.card.still{cursor:default}
+.card.still:hover{transform:none}
+
+/* ---------- predict ---------- */
+.sentence-box{
+  border-left:1px solid var(--wood-light);padding:.25rem 0 .25rem 1.6rem;margin:1.5rem 0 2rem;
+  font-size:1.45rem;line-height:1.6;color:var(--text);font-style:italic;
+}
+
+/* ---------- reveal: the centrepiece ---------- */
+.ghosted{
+  position:relative;margin:3.5rem 0 3rem;padding:3rem 0;
+  font-size:clamp(1.8rem,3.8vw,2.75rem);line-height:1.6;color:var(--text);
+}
+.ghosted::before{content:"";position:absolute;inset:-2rem -6rem;pointer-events:none;
+  background:radial-gradient(closest-side, rgba(255,205,150,.07), transparent);}
+.ghosted .kept{color:var(--text)}
+.ghosted .lost{color:transparent;position:relative;white-space:pre;display:inline-block}
+.ghosted .lost::after{
+  content:attr(data-w);position:absolute;left:0;top:0;white-space:pre;
+  color:var(--loss);opacity:.62;filter:blur(.6px);
+  text-shadow:0 0 18px var(--loss-glow);
+  text-decoration:line-through;text-decoration-thickness:1px;text-decoration-color:rgba(207,74,63,.55);
+  animation:dissolve 2.8s cubic-bezier(.3,.1,.2,1) both;
+  animation-delay:calc(var(--i,0) * 70ms + 500ms);
+}
+@keyframes dissolve{
+  0%{color:var(--text);opacity:1;filter:none;text-shadow:none;transform:none;text-decoration-color:transparent}
+  30%{color:var(--loss);opacity:1;filter:none}
+  100%{color:var(--loss);opacity:.62;filter:blur(.6px);transform:translateY(-.06em);letter-spacing:.03em}
+}
+.became{color:var(--text-soft);font-size:1.075rem;line-height:1.75;margin-top:2.25rem;max-width:40em}
+.lost-word{color:var(--loss);font-style:italic}
+.reveal-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-faint);margin-top:.5rem}
+.reveal-label + .sentence-box{margin-top:.75rem;font-size:1.2rem;color:var(--text-soft)}
+
+/* ---------- Pangram: an editorial aside, not a dashboard ---------- */
+.verdicts{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:0;margin:1rem 0 0;
+  border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.verdict{padding:2rem 2rem 2.1rem 0}
+.verdict + .verdict{padding-left:2rem;border-left:1px solid var(--rule)}
+@media (max-width:640px){.verdict + .verdict{padding-left:0;border-left:0;border-top:1px solid var(--rule)}}
+.verdict .h{font-family:var(--mono);font-size:.66rem;letter-spacing:.22em;text-transform:uppercase;color:var(--text-faint)}
+.verdict .q{font-style:italic;color:var(--text-soft);margin-top:.9rem;line-height:1.5;font-size:1.05rem}
+.verdict .v{font-size:2.1rem;line-height:1.15;margin-top:.9rem;font-style:italic;color:var(--text)}
+.verdict .n{font-family:var(--mono);font-size:.72rem;line-height:1.7;color:var(--text-soft);margin-top:.55rem}
+.verdict .n.err{color:var(--notice)}
+.verdicts + .hint{margin-top:1.1rem}
+
+.closing{margin-top:3.25rem}
+.closing p{font-size:1.25rem;line-height:1.72;margin:0 0 1.2rem;color:var(--text-soft)}
+.closing p:first-child{color:var(--text)}
+.final{
+  font-size:clamp(1.5rem,3.8vw,2.1rem);line-height:1.32;margin:3.25rem 0 0;
+  padding-top:2.25rem;border-top:1px solid var(--wood);color:var(--text);font-style:italic;
+}
+
+/* Every version scored */
+.gradient{margin-top:3.5rem;padding-top:2rem;border-top:1px solid var(--rule)}
 .gradient .step{margin-bottom:1.25rem}
-.gradient table{margin:0 0 1.25rem}
-.gradient td{font-size:.875rem;color:var(--ink)}
-.gradient tr.flip td{border-top:1.5px solid var(--ink);color:var(--ink);font-weight:500}
+table{width:100%;border-collapse:collapse;margin:0 0 1.25rem;font-family:var(--mono);font-size:.75rem}
+th,td{text-align:left;padding:.8rem .6rem;border-bottom:1px solid var(--rule-soft)}
+th{color:var(--text-faint);font-weight:400;letter-spacing:.18em;text-transform:uppercase;font-size:.64rem}
+td{color:var(--text-soft)}
+tr.flip td{color:var(--text);border-top:1px solid var(--wood-light)}
+
+.err{color:var(--notice);font-family:var(--mono);font-size:.78rem;margin-top:1.1rem}
+.foot{font-family:var(--mono);font-size:.66rem;letter-spacing:.12em;color:var(--text-faint);text-align:center;padding:1.5rem 16px 2.5rem;opacity:.8}
+
+.fade{animation:fade .9s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){
+  .fade,.ghosted .lost::after{animation:none}
+  .card,button{transition:none}
+}
+@media (max-width:640px){
+  body{font-size:18px}
+  .stage{padding:3rem 18px 7rem}
+  .desk{margin:0 -10px;padding:1rem}
+  textarea{padding:1.75rem 1.5rem}
+  .letter.sheet{padding:1.9rem 1.5rem}
+  .ghosted::before{inset:-1rem -1rem}
+}

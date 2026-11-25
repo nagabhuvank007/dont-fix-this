@@ -113,12 +113,14 @@ export default function App() {
             <p className="lede">
               Not an essay. Not a prompt. Something you would actually say to someone.
             </p>
-            <textarea
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              placeholder="Dear…"
-              spellCheck={false}
-            />
+            <div className="desk">
+              <textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder="Dear…"
+                spellCheck={false}
+              />
+            </div>
             <div className="row">
               <button disabled={wordCount < 50} onClick={() => setScreen("protect")}>
                 Continue
@@ -174,7 +176,7 @@ export default function App() {
       <Shell step="02 — protect">
         <h1>Select the sentence you would hate to lose.</h1>
         <p className="lede">One sentence. The one that would hurt to see go.</p>
-        <div className="letter pick">
+        <div className="letter pick sheet">
           {paras.map((p, pi) => (
             <p key={pi} className="para">
               {p.parts.map((s, i) => (
@@ -260,14 +262,14 @@ export default function App() {
         <div className="ghosted">
           {tokens.map((t, i) =>
             t.lost
-              ? <span key={i} className="lost" data-w={t.t}>{t.t}</span>
+              ? <span key={i} className="lost" data-w={t.t} style={{ "--i": i }}>{t.t}</span>
               : <span key={i} className="kept">{t.t}</span>
           )}
         </div>
 
         {result.outcome === "semantic" && result.match && (
           <>
-            <p className="hint">became</p>
+            <p className="reveal-label">became</p>
             <div className="sentence-box">{result.match}</div>
           </>
         )}
@@ -275,7 +277,12 @@ export default function App() {
         {result.lost.length > 0 && (
           <p className="became">
             {result.lost.length} word{result.lost.length === 1 ? "" : "s"} did not come back:{" "}
-            {result.lost.map((w) => `“${w}”`).join(", ")}.
+            {result.lost.map((w, i) => (
+              <React.Fragment key={i}>
+                {i > 0 && ", "}
+                <span className="lost-word">“{w}”</span>
+              </React.Fragment>
+            ))}.
           </p>
         )}
 
@@ -292,7 +299,7 @@ export default function App() {
     return (
       <Shell step="06 — the final choice" wide>
         <h1>Knowing what changed, would you still send it?</h1>
-        <div className="card" style={{ cursor: "default" }}>
+        <div className="card still">
           <span className="body">{chosen.text}</span>
         </div>
         <div className="row">
