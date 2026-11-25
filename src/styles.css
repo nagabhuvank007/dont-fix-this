@@ -26,6 +26,8 @@ body{
   width:100%;max-width:var(--measure);margin:0 auto;padding:4rem 16px 6rem;
 }
 .wide{max-width:50rem}
+/* Four letters must be scannable side by side, not stacked 2x2. */
+.widest{max-width:82rem}
 
 .step{
   font-family:var(--sans);font-size:.6875rem;letter-spacing:.18em;text-transform:uppercase;
@@ -59,7 +61,7 @@ button.ghost:hover:not(:disabled){border-color:var(--ink);background:transparent
 .row{display:flex;gap:.75rem;flex-wrap:wrap;align-items:center;margin-top:2.25rem}
 .spacer{flex:1}
 
-.letter{white-space:pre-wrap;font-size:1.0625rem;line-height:1.78}
+.letter{white-space:pre-wrap;font-size:1.0625rem;line-height:1.82;max-width:36em}
 
 /* sentence picking */
 .pick span{
@@ -70,7 +72,14 @@ button.ghost:hover:not(:disabled){border-color:var(--ink);background:transparent
 .pick span.on{background:var(--wine);color:var(--paper)}
 
 /* the four cards */
-.cards{display:grid;gap:1.25rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))}
+/* Cap card width so a single letter doesn't stretch to an unreadable measure,
+   and centre the row when there are fewer cards than columns. */
+.cards{
+  display:grid;gap:1.25rem;justify-content:start;
+  grid-template-columns:repeat(auto-fit,minmax(18rem,30rem));
+}
+/* Four versions side by side need to be narrower than a lone letter. */
+.cards.four{grid-template-columns:repeat(auto-fit,minmax(16rem,1fr))}
 .card{
   background:var(--paper-deep);border:1px solid var(--rule);border-radius:2px;
   padding:1.6rem 1.5rem;cursor:pointer;text-align:left;font-family:var(--serif);
@@ -80,24 +89,32 @@ button.ghost:hover:not(:disabled){border-color:var(--ink);background:transparent
 .card:hover{border-color:var(--wine-soft);transform:translateY(-2px);background:var(--paper-deep)}
 .card.on{border-color:var(--wine);box-shadow:inset 0 0 0 1px var(--wine)}
 .card .mark{font-family:var(--sans);font-size:.6875rem;letter-spacing:.16em;color:var(--ink-faint);text-transform:uppercase}
-.card .body{white-space:pre-wrap;font-size:.96rem;line-height:1.7}
+.card .body{white-space:pre-wrap;font-size:.96rem;line-height:1.75;max-width:34em}
+
+/* The provenance note is a different kind of statement from the letter.
+   Separate it rather than letting it read as the last line. */
+.card .note{
+  border-top:1px solid var(--rule);padding-top:.9rem;margin-top:.15rem;
+  font-family:var(--sans);font-size:.75rem;line-height:1.5;color:var(--ink-faint);
+}
 
 /* ghosts */
-.ghosted{position:relative;margin:2rem 0;font-size:1.15rem;line-height:1.9}
+/* The reveal is the hero of the whole piece. It must outweigh its own heading. */
+.ghosted{position:relative;margin:2.5rem 0 2rem;font-size:clamp(1.5rem,3vw,2.125rem);line-height:1.65}
 .ghosted .kept{color:var(--ink)}
 .ghosted .lost{
   color:transparent;position:relative;
 }
 .ghosted .lost::after{
   content:attr(data-w);position:absolute;inset:0;
-  color:var(--wine-soft);opacity:.42;
-  text-decoration:line-through;text-decoration-thickness:1px;
+  color:var(--wine);opacity:.72;
+  text-decoration:line-through;text-decoration-thickness:1.5px;
 }
 .sentence-box{
-  border-left:2px solid var(--wine);padding:.2rem 0 .2rem 1.25rem;margin:1.75rem 0;
-  font-size:1.15rem;line-height:1.8;
+  border-left:2px solid var(--rule);padding:.2rem 0 .2rem 1.5rem;margin:1.25rem 0 0;
+  font-size:1.3rem;line-height:1.65;color:var(--ink-soft);
 }
-.became{color:var(--ink-soft);font-size:1.0625rem;margin-top:.6rem}
+.became{color:var(--ink-soft);font-size:1.0625rem;line-height:1.7;margin-top:2.25rem;max-width:38em}
 
 /* verdict + table */
 .verdict{border:1px solid var(--rule);border-radius:2px;padding:1.5rem;margin:2rem 0;background:var(--paper-deep)}

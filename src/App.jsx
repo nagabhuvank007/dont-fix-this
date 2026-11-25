@@ -118,7 +118,7 @@ export default function App() {
                 <button key={l.id} className="card" onClick={() => { setText(l.original); setScreen("protect"); }}>
                   <span className="mark">{l.author} — to {l.to}</span>
                   <span className="body">{l.original}</span>
-                  {l.blurb && <span className="hint" style={{ marginTop: 0 }}>{l.blurb}</span>}
+                  {l.blurb && <span className="note">{l.blurb}</span>}
                 </button>
               ))}
             </div>
@@ -196,12 +196,12 @@ export default function App() {
   // ---------- 04 CHOOSE ----------
   if (screen === "choose")
     return (
-      <Shell step="04 — choose" wide>
+      <Shell step="04 — choose" widest>
         <h1>Which letter would you send?</h1>
         <p className="lede">
           You will recognise your own. What is hidden is how hard each one was edited.
         </p>
-        <div className="cards">
+        <div className="cards four">
           {deck.map((v, i) => (
             <button
               key={v.level}
@@ -304,10 +304,10 @@ export default function App() {
   );
 }
 
-function Shell({ step, wide, children }) {
+function Shell({ step, wide, widest, children }) {
   return (
     <>
-      <div className={`stage fade${wide ? " wide" : ""}`}>
+      <div className={`stage fade${widest ? " widest" : wide ? " wide" : ""}`}>
         <div className="step">{step}</div>
         {children}
       </div>
