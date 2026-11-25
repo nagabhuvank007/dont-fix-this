@@ -25,7 +25,7 @@ const shuffle = (a) => {
 };
 
 export default function App() {
-  const [screen, setScreen] = useState("write");
+  const [screen, setScreen] = useState("title");
   const [text, setText] = useState("");
   const [protectedSentence, setProtected] = useState(null);
   const [predicted, setPredicted] = useState(null);
@@ -57,7 +57,7 @@ export default function App() {
   }, []);
 
   const reset = () => {
-    setScreen("write"); setText(""); setProtected(null); setPredicted(null);
+    setScreen("title"); setText(""); setProtected(null); setPredicted(null);
     setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null); setOwn(false); setGradient(null);
     setDetectionErr(null); setSentenceDetection(null); setSentenceErr(null);
   };
@@ -102,6 +102,24 @@ export default function App() {
   const chosen = pick;
   const result = chosen ? outcomeFor(protectedSentence || "", chosen.text) : null;
   const switched = firstPick && chosen && firstPick.level !== chosen.level;
+
+  // ---------- 00 TITLE ----------
+  // A cold open leaves a judge guessing what they are holding. Two lines of
+  // orientation, then out of the way.
+  if (screen === "title")
+    return (
+      <Shell step="an experiment about editing">
+        <h1 className="title">DON'T FIX THIS.</h1>
+        <p className="lede tagline">What are you willing to lose to sound better?</p>
+        <p className="lede">
+          Choose a letter someone really wrote. Mark the one sentence you would hate to
+          lose. Then watch AI make it better, and decide what better means.
+        </p>
+        <div className="row">
+          <button onClick={() => setScreen("write")}>Begin</button>
+        </div>
+      </Shell>
+    );
 
   // ---------- 01 WRITE ----------
   if (screen === "write")

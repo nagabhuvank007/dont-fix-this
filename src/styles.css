@@ -151,3 +151,8 @@ tr.flip td{color:var(--wine);font-weight:500}
 .gradient table{margin:0 0 1.25rem}
 .gradient td{font-size:.875rem;color:var(--ink)}
 .gradient tr.flip td{border-top:1.5px solid var(--ink);color:var(--ink);font-weight:500}
+
+/* Opening. Larger than any heading that follows, because nothing else on it
+   competes — and the tagline is the question the whole piece asks. */
+.title{font-size:clamp(2.6rem,7vw,4rem);line-height:1.05;margin-bottom:1.5rem}
+.tagline{font-size:1.25rem;color:var(--ink);margin-bottom:1.75rem}
