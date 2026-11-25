@@ -121,10 +121,9 @@ app.post("/api/rewrite", async (req, res) => {
   }
 });
 
-app.post("/api/detect", async (req, res) => {
-  const { text } = req.body || {};
-  if (typeof text !== "string" || !text.trim())
-    return res.status(400).json({ error: "No text." });
+// Pangram is only ever called from here, with the key from the environment.
+// Fields are passed through as returned; a missing field stays null, never filled in.
+async function pangram(text, res) {
   if (!PANGRAM_KEY)
     return res.status(503).json({ error: "No PANGRAM_API_KEY configured." });
   try {
@@ -137,19 +136,37 @@ app.post("/api/detect", async (req, res) => {
     if (!r.ok) return res.status(502).json({ error: `pangram ${r.status}: ${body.slice(0, 300)}` });
     const d = JSON.parse(body);
     res.json({
-      headline: d.headline,
-      prediction: d.prediction,
-      prediction_short: d.prediction_short,
-      fraction_human: d.fraction_human,
-      fraction_ai: d.fraction_ai,
-      fraction_ai_assisted: d.fraction_ai_assisted,
+      headline: d.headline ?? null,
+      prediction: d.prediction ?? null,
+      prediction_short: d.prediction_short ?? null,
+      fraction_human: d.fraction_human ?? null,
+      fraction_ai: d.fraction_ai ?? null,
+      fraction_ai_assisted: d.fraction_ai_assisted ?? null,
+      calibrated_confidence: d.calibrated_confidence ?? null,
       windows: (d.windows || []).map((w) => ({
         text: w.text, label: w.label, confidence: w.confidence,
       })),
+      word_count: text.trim().split(/\s+/).length,
     });
   } catch (e) {
     res.status(502).json({ error: String(e.message || e) });
   }
+}
+
+app.post("/api/detect", (req, res) => {
+  const { text } = req.body || {};
+  if (typeof text !== "string" || !text.trim())
+    return res.status(400).json({ error: "No text." });
+  pangram(text, res);
+});
+
+// The protected sentence on its own. Well under Pangram's 50-word guidance by
+// design, so no minimum is enforced: whatever it returns is shown as returned.
+app.post("/api/detect-sentence", (req, res) => {
+  const { sentence } = req.body || {};
+  if (typeof sentence !== "string" || !sentence.trim())
+    return res.status(400).json({ error: "No sentence." });
+  pangram(sentence, res);
 });
 
 app.get("/api/health", (_req, res) =>
