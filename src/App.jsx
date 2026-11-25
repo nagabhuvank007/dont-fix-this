@@ -40,6 +40,8 @@ export default function App() {
   const [library, setLibrary] = useState([]);
   const [canWriteOwn, setCanWriteOwn] = useState(true);
   const [own, setOwn] = useState(false);
+  const [gradient, setGradient] = useState(null);
+  const [gradientBusy, setGradientBusy] = useState(false);
   const [err, setErr] = useState(null);
 
   const wordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
@@ -56,7 +58,7 @@ export default function App() {
 
   const reset = () => {
     setScreen("write"); setText(""); setProtected(null); setPredicted(null);
-    setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null); setOwn(false);
+    setDeck([]); setFirstPick(null); setPick(null); setDetection(null); setErr(null); setOwn(false); setGradient(null);
     setDetectionErr(null); setSentenceDetection(null); setSentenceErr(null);
   };
 
@@ -72,6 +74,18 @@ export default function App() {
 
   // Both readings go out together, only once the participant has chosen to send.
   // Each settles on its own: a failure leaves its result null and records why.
+  async function scoreEveryVersion() {
+    setGradientBusy(true);
+    try {
+      const versions = deck.map((v) => ({ level: v.level, text: v.text }));
+      const { rows } = await post("/api/detect-all", { versions });
+      const order = { original: 0, light: 1, medium: 2, heavy: 3 };
+      rows.sort((a, b) => (order[a.level] ?? 9) - (order[b.level] ?? 9));
+      setGradient(rows);
+    } catch (e) { setErr(e.message); }
+    finally { setGradientBusy(false); }
+  }
+
   async function detect(chosen) {
     setBusy(true); setErr(null);
     const [letter, sentence] = await Promise.allSettled([
@@ -311,6 +325,14 @@ export default function App() {
         {c.lines.map((l, i) => <p key={i}>{l}</p>)}
       </div>
       <p className="final">{c.final}</p>
+
+      <Gradient
+        rows={gradient}
+        busy={gradientBusy}
+        onRun={scoreEveryVersion}
+        protectedSentence={protectedSentence}
+        deck={deck}
+      />
       <div className="row">
         <button className="ghost" onClick={reset}>Start again</button>
       </div>
@@ -353,6 +375,62 @@ function Verdict({ title, result, error, quote }) {
       ) : (
         <div className="n err">No result was received.</div>
       )}
+    </div>
+  );
+}
+
+// Every version scored by Pangram, so the boundary is shown rather than claimed.
+function Gradient({ rows, busy, onRun, protectedSentence, deck }) {
+  const label = { original: "your own words", light: "lightly edited",
+                  medium: "edited for clarity", heavy: "heavily polished" };
+
+  if (!rows)
+    return (
+      <div className="gradient">
+        <button className="ghost" onClick={onRun} disabled={busy}>
+          {busy ? "Reading all four…" : "Score every version"}
+        </button>
+      </div>
+    );
+
+  const isAI = (r) => /^AI/i.test(r.headline || "");
+  const flipAt = rows.findIndex(isAI);
+
+  return (
+    <div className="gradient">
+      <div className="step">Pangram — every version</div>
+      <table>
+        <thead>
+          <tr><th>version</th><th>your sentence</th><th>Pangram</th></tr>
+        </thead>
+        <tbody>
+          {rows.map((r, i) => {
+            const v = deck.find((d) => d.level === r.level);
+            const o = v ? outcomeFor(protectedSentence, v.text).outcome : null;
+            const kept = { verbatim: "kept, word for word", semantic: "meaning kept, words gone",
+                           gone: "gone" }[o] || "—";
+            return (
+              <tr key={r.level} className={i === flipAt ? "flip" : ""}>
+                <td>{label[r.level] || r.level}</td>
+                <td>{kept}</td>
+                <td>{r.error ? `no reading — ${r.error}` : r.headline}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+      {flipAt > 0 && (
+        <p className="became">
+          Pangram turns from human to machine between{" "}
+          <strong>{label[rows[flipAt - 1].level]}</strong> and{" "}
+          <strong>{label[rows[flipAt].level]}</strong> — the same step where the sentence
+          stops being yours. Nothing coordinated that. One is a grammar choice, the other
+          is a classifier.
+        </p>
+      )}
+      <p className="hint">
+        Four live readings, just now. One letter, one run — a demonstration, not a study.
+      </p>
     </div>
   );
 }

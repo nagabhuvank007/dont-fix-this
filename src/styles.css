@@ -144,3 +144,10 @@ tr.flip td{color:var(--wine);font-weight:500}
 
 .letter .para{margin:0 0 1.15rem}
 .letter .para:last-child{margin-bottom:0}
+
+/* Every version scored: the finding, shown rather than asserted. */
+.gradient{margin-top:3rem;padding-top:2rem;border-top:1px solid var(--rule)}
+.gradient .step{margin-bottom:1.25rem}
+.gradient table{margin:0 0 1.25rem}
+.gradient td{font-size:.875rem;color:var(--ink)}
+.gradient tr.flip td{border-top:1.5px solid var(--ink);color:var(--ink);font-weight:500}

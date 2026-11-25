@@ -123,6 +123,25 @@ app.post("/api/rewrite", async (req, res) => {
 
 // Pangram is only ever called from here, with the key from the environment.
 // Fields are passed through as returned; a missing field stays null, never filled in.
+async function scorePangram(text) {
+  const r = await fetch("https://text.api.pangram.com/v3", {
+    method: "POST",
+    headers: { "content-type": "application/json", "x-api-key": PANGRAM_KEY },
+    body: JSON.stringify({ text, model: "default" }),
+  });
+  const body = await r.text();
+  if (!r.ok) throw new Error(`pangram ${r.status}: ${body.slice(0, 200)}`);
+  const d = JSON.parse(body);
+  return {
+    headline: d.headline ?? null,
+    prediction: d.prediction ?? null,
+    fraction_human: d.fraction_human ?? null,
+    fraction_ai: d.fraction_ai ?? null,
+    fraction_ai_assisted: d.fraction_ai_assisted ?? null,
+    word_count: text.trim().split(/\s+/).length,
+  };
+}
+
 async function pangram(text, res) {
   if (!PANGRAM_KEY)
     return res.status(503).json({ error: "No PANGRAM_API_KEY configured." });
@@ -167,6 +186,29 @@ app.post("/api/detect-sentence", (req, res) => {
   if (typeof sentence !== "string" || !sentence.trim())
     return res.status(400).json({ error: "No sentence." });
   pangram(sentence, res);
+});
+
+// Scores the original and every polished version in one request, so the piece
+// can show where Pangram's boundary actually falls instead of asserting it.
+// Fired in parallel; Pangram allows 5 requests per second and this sends four.
+app.post("/api/detect-all", async (req, res) => {
+  const { versions } = req.body || {};
+  if (!Array.isArray(versions) || !versions.length)
+    return res.status(400).json({ error: "No versions." });
+  if (!PANGRAM_KEY)
+    return res.status(503).json({ error: "No PANGRAM_API_KEY configured." });
+
+  const rows = await Promise.all(
+    versions.slice(0, 6).map(async (v) => {
+      try {
+        return { level: v.level, ...(await scorePangram(v.text)) };
+      } catch (e) {
+        // One failure must not take the others down, and is never hidden.
+        return { level: v.level, error: String(e.message || e) };
+      }
+    })
+  );
+  res.json({ rows });
 });
 
 app.get("/api/health", (_req, res) =>
